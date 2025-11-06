@@ -18,9 +18,11 @@ export default function Clock() {
     })
 
     return (
-        <div className='text-center'>
-            <p className='font-bold text-4xl'>Hora Atual:</p>
-            <p className='font-semibold text-4xl'>{time}</p>
+        <div className='text-center space-y-5'>
+            <div>
+                <p className='font-bold text-4xl'>Hora Atual:</p>
+                <p className='font-semibold text-4xl text-black/90'>{time}</p>
+            </div>
             <AnalogClock />
         </div>
     )
