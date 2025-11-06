@@ -1,7 +1,8 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { fileManger } from './file-manager'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -35,6 +36,11 @@ function createWindow() {
   })
 
   win.removeMenu()
+  win.webContents.on("context-menu", () => {
+    if (process.env.NODE_ENV === "development") {
+      win?.webContents.openDevTools()
+    }
+  })
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
@@ -47,7 +53,21 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
 }
-
+ipcMain.handle("alarm:create", async (_event, alarm) => {
+  return fileManger.create(alarm)
+})
+ipcMain.handle("alarm:getAll", async () => {
+  return fileManger.readAll()
+})
+ipcMain.handle("alarm:getById", async (_event, id) => {
+  return fileManger.readById(id)
+})
+ipcMain.handle("alarm:update", async (_event, id, alarm) => {
+  return fileManger.update(id, alarm)
+})
+ipcMain.handle("alarm:delete", async (_event, id) => {
+  return fileManger.delete(id)
+})
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
