@@ -1,11 +1,11 @@
+import { generateMedicationTimes } from '@/lib/utils'
+import { Item } from '@/types/item'
+import { parse } from 'date-fns'
 import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { alarmsFileManger, settingsFileManger } from './file-manager'
-import { generateMedicationTimes } from '@/lib/utils'
-import { Item } from '@/types/item'
-import { parse } from 'date-fns'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
