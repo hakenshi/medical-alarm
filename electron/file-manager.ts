@@ -1,26 +1,16 @@
-import { generateMedicationTimes } from "../src/lib/utils";
-import { AlarmSchedule } from "../src/lib/zod/alarm-schedule";
-import { parse } from "date-fns";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { Item } from "../src/types/item";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-class FileManger {
+class FileManger<T extends { id?: number }> {
     private filePath: string;
-    private static instance: FileManger
 
     constructor(fileName: string) {
         this.filePath = path.join(__dirname, '..', 'src', 'assets', fileName);
         this.initializeFile();
-    }
-
-    public static getInstance() {
-        if (!FileManger.instance) {
-            FileManger.instance = new FileManger("alarms.json")
-        }
-        return FileManger.instance
     }
 
     private initializeFile(): void {
@@ -29,31 +19,40 @@ class FileManger {
         }
     }
 
-    create(item: AlarmSchedule): Item {
+    private generateId(data: T[]): number {
+        return data.length > 0 ? Math.max(...data.map(d => d.id || 0)) + 1 : 1
+    }
+
+    create(item: Partial<T>, transform?: (item: Partial<T>) => T): T {
         const data = this.readAll();
-        const newItem: Item = {
-            ...item,
-            times: generateMedicationTimes(parseInt(item.frequency), parse(item.startingTime, "HH:mm", new Date())),
-            id: data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1
-        };
+        const newItem: T = (transform ? transform(item) : { id: this.generateId(data), ...item } as T);
+
+        if (!newItem.id) {
+            newItem.id = this.generateId(data)
+        }
+
         data.push(newItem);
         fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
         return newItem;
     }
-
-    readAll(): Item[] {
+    readAll(): T[] {
         const content = fs.readFileSync(this.filePath, "utf-8");
         return JSON.parse(content);
     }
 
-    readById(id: number): Item | null {
+    readById(id: number): T | null {
         return this.readAll().find((item) => item.id === id) || null;
     }
 
-    update(id: number, updates: Partial<Item>): Item | null {
-        const data = this.readAll().map((item) => item.id === id ? ({ ...item, ...updates }) : item)[0];
+    update(id: number, updates: Partial<T>): T | null {
+        const data = this.readAll();
+        const updatedItem = data.find(i => i.id === id)
+        if (!updatedItem) return null
+
+        Object.assign(updatedItem, updates)
+
         fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
-        return data;
+        return updatedItem;
     }
 
     delete(id: number): boolean {
@@ -65,4 +64,5 @@ class FileManger {
     }
 }
 
-export const fileManger = FileManger.getInstance()
+export const alarmsFileManger = new FileManger<Item>("alarms.json")
+export const settingsFileManger = new FileManger<Settings>("settings.json")

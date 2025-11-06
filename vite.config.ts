@@ -18,6 +18,13 @@ export default defineConfig({
       main: {
         // Shortcut of `build.lib.entry`.
         entry: 'electron/main.ts',
+        vite: {
+          resolve: {
+            alias: {
+              "@": path.resolve(__dirname, "./src")
+            }
+          },
+        }
       },
       preload: {
         // Shortcut of `build.rollupOptions.input`.

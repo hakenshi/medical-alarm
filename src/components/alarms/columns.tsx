@@ -1,10 +1,10 @@
 import { Item } from "@/types/item";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "../ui/button";
 import { PencilIcon, TrashIcon } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogTrigger } from "../ui/dialog";
 import AlarmForm from "../alarm-form";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "../ui/alert-dialog";
+import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 
 export const columns: ColumnDef<Item>[] = [
     {
@@ -52,14 +52,12 @@ export const columns: ColumnDef<Item>[] = [
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
-                            <DialogDescription>
-                                <AlarmForm defaultValues={alarm} />
-                            </DialogDescription>
+                            <AlarmForm defaultValues={alarm} />
                         </DialogContent>
                     </Dialog>
                     <AlertDialog>
-                        <AlertDialogTrigger>
-                            <Button>
+                        <AlertDialogTrigger asChild>
+                            <Button variant={"destructive"}>
                                 <TrashIcon /> Exlcuir
                             </Button>
                         </AlertDialogTrigger>

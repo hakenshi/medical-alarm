@@ -1,13 +1,63 @@
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-import { ipcMain, app, BrowserWindow } from "electron";
+import { ipcMain, app, BrowserWindow, Tray, Menu } from "electron";
 import { createRequire } from "node:module";
-import { fileURLToPath as fileURLToPath$1 } from "node:url";
 import path$1 from "node:path";
+import { fileURLToPath as fileURLToPath$1 } from "node:url";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
+class FileManger {
+  constructor(fileName) {
+    __publicField(this, "filePath");
+    this.filePath = path.join(__dirname$1, "..", "src", "assets", fileName);
+    this.initializeFile();
+  }
+  initializeFile() {
+    if (!fs.existsSync(this.filePath)) {
+      fs.writeFileSync(this.filePath, JSON.stringify([], null, 2));
+    }
+  }
+  generateId(data) {
+    return data.length > 0 ? Math.max(...data.map((d) => d.id || 0)) + 1 : 1;
+  }
+  create(item, transform) {
+    const data = this.readAll();
+    const newItem = transform ? transform(item) : { id: this.generateId(data), ...item };
+    if (!newItem.id) {
+      newItem.id = this.generateId(data);
+    }
+    data.push(newItem);
+    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+    return newItem;
+  }
+  readAll() {
+    const content = fs.readFileSync(this.filePath, "utf-8");
+    return JSON.parse(content);
+  }
+  readById(id) {
+    return this.readAll().find((item) => item.id === id) || null;
+  }
+  update(id, updates) {
+    const data = this.readAll();
+    const updatedItem = data.find((i) => i.id === id);
+    if (!updatedItem) return null;
+    Object.assign(updatedItem, updates);
+    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+    return updatedItem;
+  }
+  delete(id) {
+    const data = this.readAll();
+    const filtered = data.filter((item) => item.id !== id);
+    if (filtered.length === data.length) return false;
+    fs.writeFileSync(this.filePath, JSON.stringify(filtered, null, 2));
+    return true;
+  }
+}
+const alarmsFileManger = new FileManger("alarms.json");
+const settingsFileManger = new FileManger("settings.json");
 const millisecondsInWeek = 6048e5;
 const millisecondsInDay = 864e5;
 const millisecondsInMinute = 6e4;
@@ -3153,58 +3203,6 @@ function generateMedicationTimes(frequency, startTime) {
   }
   return times;
 }
-const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
-const _FileManger = class _FileManger {
-  constructor(fileName) {
-    __publicField(this, "filePath");
-    this.filePath = path.join(__dirname$1, "..", "src", "assets", fileName);
-    this.initializeFile();
-  }
-  static getInstance() {
-    if (!_FileManger.instance) {
-      _FileManger.instance = new _FileManger("alarms.json");
-    }
-    return _FileManger.instance;
-  }
-  initializeFile() {
-    if (!fs.existsSync(this.filePath)) {
-      fs.writeFileSync(this.filePath, JSON.stringify([], null, 2));
-    }
-  }
-  create(item) {
-    const data = this.readAll();
-    const newItem = {
-      ...item,
-      times: generateMedicationTimes(parseInt(item.frequency), parse(item.startingTime, "HH:mm", /* @__PURE__ */ new Date())),
-      id: data.length > 0 ? Math.max(...data.map((d) => d.id)) + 1 : 1
-    };
-    data.push(newItem);
-    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
-    return newItem;
-  }
-  readAll() {
-    const content = fs.readFileSync(this.filePath, "utf-8");
-    return JSON.parse(content);
-  }
-  readById(id) {
-    return this.readAll().find((item) => item.id === id) || null;
-  }
-  update(id, updates) {
-    const data = this.readAll().map((item) => item.id === id ? { ...item, ...updates } : item)[0];
-    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
-    return data;
-  }
-  delete(id) {
-    const data = this.readAll();
-    const filtered = data.filter((item) => item.id !== id);
-    if (filtered.length === data.length) return false;
-    fs.writeFileSync(this.filePath, JSON.stringify(filtered, null, 2));
-    return true;
-  }
-};
-__publicField(_FileManger, "instance");
-let FileManger = _FileManger;
-const fileManger = FileManger.getInstance();
 createRequire(import.meta.url);
 const __dirname = path$1.dirname(fileURLToPath$1(import.meta.url));
 process.env.APP_ROOT = path$1.join(__dirname, "..");
@@ -3213,9 +3211,10 @@ const MAIN_DIST = path$1.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path$1.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 let win;
+let isQuitting = false;
 function createWindow() {
   win = new BrowserWindow({
-    icon: path$1.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    icon: path$1.join(process.env.VITE_PUBLIC, "logo.png"),
     webPreferences: {
       preload: path$1.join(__dirname, "preload.mjs")
     }
@@ -3229,26 +3228,74 @@ function createWindow() {
   win.webContents.on("did-finish-load", () => {
     win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
   });
+  win.on("minimize", (e) => {
+    e.preventDefault();
+    win == null ? void 0 : win.hide();
+  });
+  win.on("close", (e) => {
+    if (!isQuitting) {
+      e.preventDefault();
+      win == null ? void 0 : win.hide();
+    }
+  });
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {
     win.loadFile(path$1.join(RENDERER_DIST, "index.html"));
   }
 }
+function createTray() {
+  const tray = new Tray(path$1.join(process.env.VITE_PUBLIC, "logo.png"));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Show",
+      click: function() {
+        win == null ? void 0 : win.show();
+        window.focus();
+      }
+    },
+    {
+      label: "Exit",
+      click: function() {
+        isQuitting = true;
+        app.quit();
+      }
+    }
+  ]);
+  tray.setContextMenu(contextMenu);
+  tray.on("click", () => {
+    win == null ? void 0 : win.show();
+    win == null ? void 0 : win.focus();
+  });
+}
 ipcMain.handle("alarm:create", async (_event, alarm) => {
-  return fileManger.create(alarm);
+  return alarmsFileManger.create(alarm, (item) => ({
+    id: 0,
+    times: generateMedicationTimes(Number(item.frequency), parse((item == null ? void 0 : item.startingTime) || "00:00", "HH:mm", /* @__PURE__ */ new Date())),
+    ...item
+  }));
 });
 ipcMain.handle("alarm:getAll", async () => {
-  return fileManger.readAll();
+  return alarmsFileManger.readAll();
 });
 ipcMain.handle("alarm:getById", async (_event, id) => {
-  return fileManger.readById(id);
+  return alarmsFileManger.readById(id);
 });
 ipcMain.handle("alarm:update", async (_event, id, alarm) => {
-  return fileManger.update(id, alarm);
+  return alarmsFileManger.update(id, alarm);
 });
 ipcMain.handle("alarm:delete", async (_event, id) => {
-  return fileManger.delete(id);
+  return alarmsFileManger.delete(id);
+});
+ipcMain.handle("settings:get", async () => {
+  return settingsFileManger.readAll()[0];
+});
+ipcMain.handle("settings:save", async (_event, settings) => {
+  const existing = settingsFileManger.readAll();
+  if (existing.length > 0) {
+    return settingsFileManger.update(existing[0].id, settings);
+  }
+  return settingsFileManger.create(settings);
 });
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -3261,7 +3308,10 @@ app.on("activate", () => {
     createWindow();
   }
 });
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  createTray();
+});
 export {
   MAIN_DIST,
   RENDERER_DIST,
