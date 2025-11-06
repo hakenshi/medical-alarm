@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import AnalogClock from './analog-clock'
 
 export default function Clock() {
 
@@ -20,6 +21,7 @@ export default function Clock() {
         <div className='text-center'>
             <p className='font-bold text-4xl'>Hora Atual:</p>
             <p className='font-semibold text-4xl'>{time}</p>
+            <AnalogClock />
         </div>
     )
 }

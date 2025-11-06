@@ -12,19 +12,5 @@
     "startingTime": "08:00",
     "isContinous": false,
     "id": 1
-  },
-  {
-    "name": "teste",
-    "dosage": "10",
-    "times": [
-      "08:00",
-      "16:00",
-      "00:00"
-    ],
-    "frequency": "3",
-    "durationDays": "",
-    "startingTime": "08:00",
-    "isContinous": true,
-    "id": 2
   }
 ]

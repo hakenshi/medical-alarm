@@ -1,9 +1,11 @@
-import { AlarmSchedule } from '@/lib/zod/alarm-schedule'
+import { Item } from '@/types/item'
 import { useEffect, useState } from 'react'
+import { columns } from './columns'
+import { DataTable } from './data-table'
 
 export default function Alarms() {
 
-    const [alarms, setAlarms] = useState<AlarmSchedule[]>([])
+    const [alarms, setAlarms] = useState<Item[]>([])
 
     useEffect(() => {
         const fetchAlarms = async () => {
@@ -16,11 +18,7 @@ export default function Alarms() {
     return (
         <div className="w-screen h-screen flex flex-col gap-5 justify-center items-center">
             <h1 className='font-semibold text-3xl'>Meus Alarmes</h1>
-            {alarms.map(a => (
-                <p>
-                    {a.name}
-                </p>
-            ))}
+            <DataTable columns={columns} data={alarms} />
         </div>
     )
 }

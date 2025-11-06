@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import AlarmForm from './alarm-form'
-import Clock from './clock'
+import Clock from './clocks/clock'
 import { Button } from './ui/button'
 import { DialogHeader } from './ui/dialog'
 import { Link } from 'react-router'

@@ -1,5 +1,5 @@
 import { AlarmSchedule, alarmScheduleSchema } from "@/lib/zod/alarm-schedule"
-import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group"
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Button } from "./ui/button"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "./ui/form"
