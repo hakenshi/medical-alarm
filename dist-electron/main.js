@@ -8,56 +8,6 @@ import { fileURLToPath as fileURLToPath$1 } from "node:url";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
-class FileManger {
-  constructor(fileName) {
-    __publicField(this, "filePath");
-    this.filePath = path.join(__dirname$1, "..", "src", "assets", fileName);
-    this.initializeFile();
-  }
-  initializeFile() {
-    if (!fs.existsSync(this.filePath)) {
-      fs.writeFileSync(this.filePath, JSON.stringify([], null, 2));
-    }
-  }
-  generateId(data) {
-    return data.length > 0 ? Math.max(...data.map((d) => d.id || 0)) + 1 : 1;
-  }
-  create(item, transform) {
-    const data = this.readAll();
-    const newItem = transform ? transform(item) : { id: this.generateId(data), ...item };
-    if (!newItem.id) {
-      newItem.id = this.generateId(data);
-    }
-    data.push(newItem);
-    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
-    return newItem;
-  }
-  readAll() {
-    const content = fs.readFileSync(this.filePath, "utf-8");
-    return JSON.parse(content);
-  }
-  readById(id) {
-    return this.readAll().find((item) => item.id === id) || null;
-  }
-  update(id, updates) {
-    const data = this.readAll();
-    const updatedItem = data.find((i) => i.id === id);
-    if (!updatedItem) return null;
-    Object.assign(updatedItem, updates);
-    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
-    return updatedItem;
-  }
-  delete(id) {
-    const data = this.readAll();
-    const filtered = data.filter((item) => item.id !== id);
-    if (filtered.length === data.length) return false;
-    fs.writeFileSync(this.filePath, JSON.stringify(filtered, null, 2));
-    return true;
-  }
-}
-const alarmsFileManger = new FileManger("alarms.json");
-const settingsFileManger = new FileManger("settings.json");
 const millisecondsInWeek = 6048e5;
 const millisecondsInDay = 864e5;
 const millisecondsInMinute = 6e4;
@@ -3203,6 +3153,56 @@ function generateMedicationTimes(frequency, startTime) {
   }
   return times;
 }
+const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
+class FileManger {
+  constructor(fileName) {
+    __publicField(this, "filePath");
+    this.filePath = path.join(__dirname$1, "..", "src", "assets", fileName);
+    this.initializeFile();
+  }
+  initializeFile() {
+    if (!fs.existsSync(this.filePath)) {
+      fs.writeFileSync(this.filePath, JSON.stringify([], null, 2));
+    }
+  }
+  generateId(data) {
+    return data.length > 0 ? Math.max(...data.map((d) => d.id || 0)) + 1 : 1;
+  }
+  create(item, transform) {
+    const data = this.readAll();
+    const newItem = transform ? transform(item) : { id: this.generateId(data), ...item };
+    if (!newItem.id) {
+      newItem.id = this.generateId(data);
+    }
+    data.push(newItem);
+    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+    return newItem;
+  }
+  readAll() {
+    const content = fs.readFileSync(this.filePath, "utf-8");
+    return JSON.parse(content);
+  }
+  readById(id) {
+    return this.readAll().find((item) => item.id === id) || null;
+  }
+  update(id, updates) {
+    const data = this.readAll();
+    const updatedItem = data.find((i) => i.id === id);
+    if (!updatedItem) return null;
+    Object.assign(updatedItem, updates);
+    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+    return updatedItem;
+  }
+  delete(id) {
+    const data = this.readAll();
+    const filtered = data.filter((item) => item.id !== id);
+    if (filtered.length === data.length) return false;
+    fs.writeFileSync(this.filePath, JSON.stringify(filtered, null, 2));
+    return true;
+  }
+}
+const alarmsFileManger = new FileManger("alarms.json");
+const settingsFileManger = new FileManger("settings.json");
 createRequire(import.meta.url);
 const __dirname = path$1.dirname(fileURLToPath$1(import.meta.url));
 process.env.APP_ROOT = path$1.join(__dirname, "..");

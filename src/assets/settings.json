@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": 1,
+    "alarmSound": true,
+    "customAudio": "",
+    "minimizeToTray": false,
+    "startWithComputer": false,
+    "autoDeleteExpired": false,
+    "darkTheme": true
+  }
+]

@@ -27,13 +27,13 @@ export default function AnalogClock() {
                 const x = radius * Math.cos(angle);
                 const y = radius * Math.sin(angle);
                 return (
-                    <div
+                    <span
                         key={num}
                         className="absolute text-xl font-semibold text-gray-800 select-none"
                         style={{ transform: `translate(${x}px, ${y}px)` }}
                     >
                         {num}
-                    </div>
+                    </span>
                 );
             })}
 
