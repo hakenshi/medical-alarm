@@ -1,9 +1,7 @@
 import { BellIcon, MonitorIcon, PaletteIcon, PlayIcon, SettingsIcon } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
-import { useSettings } from "../providers/settings-provider";
-import ThemeSettings from "./theme-settings";
-
+import { useSettings } from "@/hooks/useSettings";
 
 export function Settings() {
   const { settings, updateSettings } = useSettings()
@@ -35,6 +33,8 @@ export function Settings() {
                 <p className="text-sm text-muted-foreground">Reproduzir som quando o alarme tocar</p>
               </div>
               <Switch
+                checked={settings.alarmSound}
+                onCheckedChange={() => updateSettings("alarmSound", !settings.alarmSound)}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -64,14 +64,18 @@ export function Settings() {
                 <p className="text-sm text-muted-foreground">Manter aplicativo na bandeja do sistema</p>
               </div>
               <Switch
+                checked={settings.minimizeToTray}
+                onCheckedChange={() => updateSettings("minimizeToTray", !settings.minimizeToTray)}
               />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Iniciar com o Windows</p>
+                <p className="font-medium">Iniciar com o sistema</p>
                 <p className="text-sm text-muted-foreground">Abrir automaticamente ao ligar o computador</p>
               </div>
               <Switch
+                checked={settings.startWithComputer}
+                onCheckedChange={() => updateSettings("startWithComputer", !settings.startWithComputer)}
               />
             </div>
           </div>
@@ -90,16 +94,32 @@ export function Settings() {
                 <p className="text-sm text-muted-foreground">Remover alarmes expirados automaticamente</p>
               </div>
               <Switch
+                checked={settings.autoDeleteExpired}
+                onCheckedChange={() => updateSettings("autoDeleteExpired", !settings.autoDeleteExpired)}
               />
             </div>
           </div>
         </div>
 
         {/* Appearance Settings */}
-        <ThemeSettings
-          darkTheme={settings.darkTheme}
-          updateSettings={updateSettings}
-        />
+        <div className="medical-card p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <PaletteIcon className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Aparência</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Tema escuro</p>
+                <p className="text-sm text-muted-foreground">Usar tema escuro na interface</p>
+              </div>
+              <Switch
+                checked={settings.darkTheme}
+                onCheckedChange={() => updateSettings("darkTheme", !settings.darkTheme)}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

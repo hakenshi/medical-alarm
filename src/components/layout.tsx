@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 import NavigationMenu from "./navigation-menu";
-import { useSettings } from "./providers/settings-provider";
+import { useSettings } from "@/hooks/useSettings";
 
 export default function Layout() {
 
